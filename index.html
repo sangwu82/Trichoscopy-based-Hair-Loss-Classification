@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dermoscopy Hair Loss System (Visual Edition)</title>
+    <title>Dermoscopy Hair Loss System (Full Edition)</title>
     <style>
         :root { --primary: #007aff; --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --google-green: #34a853; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; -webkit-font-smoothing: antialiased; }
@@ -18,31 +18,32 @@
         .symptom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding: 5px; }
         @media (max-width: 600px) { .symptom-grid { grid-template-columns: 1fr; } }
         
-        .symptom-item { display: flex; align-items: center; padding: 14px 15px; border-bottom: 1px solid #f2f2f7; cursor: pointer; transition: background 0.2s; }
+        /* 증상 아이템 및 툴팁 설정 */
+        .symptom-item { position: relative; display: flex; align-items: center; padding: 14px 15px; border-bottom: 1px solid #f2f2f7; cursor: help; transition: background 0.2s; }
         .symptom-item:active { background: #f2f2f7; }
         .symptom-item input { width: 22px; height: 22px; margin-right: 12px; flex-shrink: 0; accent-color: var(--primary); }
         .symptom-item span { font-size: 14px; font-weight: 500; }
 
+        /* 툴팁 스타일 복구 */
+        .tooltip {
+            visibility: hidden; width: 280px; background-color: #2d3436; color: #fff; text-align: left;
+            border-radius: 6px; padding: 12px; position: absolute; z-index: 100;
+            bottom: 125%; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.3s;
+            font-size: 12px; line-height: 1.5; pointer-events: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .tooltip::after {
+            content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px;
+            border-width: 5px; border-style: solid; border-color: #2d3436 transparent transparent transparent;
+        }
+        .symptom-item:hover .tooltip { visibility: visible; opacity: 1; }
+
         .btn-primary { display: block; width: 100%; padding: 18px; background: var(--primary); color: #fff; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 600; margin: 20px 0; cursor: pointer; box-shadow: 0 4px 12px rgba(0,122,255,0.3); }
         
         #result { display: none; background: var(--card); padding: 20px; border-radius: 15px; border: 3px solid var(--primary); margin-top: 20px; }
-        .rank-item { padding: 18px; border-radius: 10px; background: #f8f9fa; margin-bottom: 15px; border-left: 6px solid #ccc; position: relative; }
+        .rank-item { padding: 18px; border-radius: 10px; background: #f8f9fa; margin-bottom: 15px; border-left: 6px solid #ccc; }
         .rank-1 { background: #e5f1ff; border-left-color: var(--primary); }
         
-        /* 구글 이미지 검색 버튼 스타일 */
-        .search-btn {
-            display: inline-block;
-            margin-top: 12px;
-            padding: 8px 14px;
-            background-color: var(--google-green);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: bold;
-            transition: opacity 0.2s;
-        }
-        .search-btn:active { opacity: 0.7; }
+        .search-btn { display: inline-block; margin-top: 12px; padding: 8px 14px; background-color: var(--google-green); color: white; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: bold; }
 
         .algo-btn { background: none; border: 1px solid #8e8e93; color: #8e8e93; padding: 10px; border-radius: 8px; width: 100%; margin-top: 15px; font-size: 12px; }
         #algo-details { display: none; font-size: 13px; color: #444; line-height: 1.7; padding: 15px; background: #f9f9f9; border-radius: 8px; margin-top: 10px; border: 1px dashed #ccc; }
@@ -88,26 +89,53 @@
 <script>
 const symptomsData = {
     shaft: [
-        {en:"Broken hairs", ko:"부러진 모발"}, {en:"Black dots", ko:"흑색점"}, {en:"Short vellus hairs", ko:"짧은 연모"},
-        {en:"Exclamation mark hairs", ko:"감탄부호 모발"}, {en:"Comma hairs", ko:"쉼표 모발"}, {en:"Coiled hairs", ko:"꼬인 모발"},
-        {en:"Corkscrew hairs", ko:"코르크스크류 모발"}, {en:"Pigtail hairs", ko:"피그테일 모발"}, {en:"Coudability hairs", ko:"쿠다빌리티 모발"},
-        {en:"Pohl-Pinkus constrictions", ko:"폴-핀쿠스 수축"}, {en:"Trichoptilosis", ko:"모발끝갈림"}, {en:"V-sign", ko:"V-징후"},
-        {en:"Upright regrowing hairs", ko:"직립 재생 모발"}, {en:"Thin hairs", ko:"얇은 모발"}, {en:"Zigzag hairs", ko:"지그재그 모발"},
-        {en:"Flame hairs", ko:"화염 모발"}, {en:"Hair powder", ko:"모발 가루"}
+        { en: "Broken hairs", ko: "부러진 모발", desc: "이영양성(dystrophic) 말단을 지닌 형태의 짧게 끊어진 모발" },
+        { en: "Black dots", ko: "흑색점", desc: "모낭 입구 수준에서 부러져 점(dot) 모양으로 관찰되는 부러진 모발의 잔해" },
+        { en: "Short vellus hairs", ko: "짧은 연모", desc: "길이가 짧고 두께가 얇으며 색소가 감소된 투명한 모발" },
+        { en: "Exclamation mark hairs", ko: "감탄부호 모발", desc: "근위부 모간이 눈에 띄게 얇아진 형태의 짧고 부러진 모발" },
+        { en: "Comma hairs", ko: "쉼표 모발", desc: "끝이 부러져 있고 구부러진 곡선 형태를 띠는 매우 짧은 모발" },
+        { en: "Coiled hairs", ko: "꼬인 모발", desc: "끝이 부러진 상태로 불규칙하게 코일처럼 꼬인 짧은 모발" },
+        { en: "Corkscrew hairs", ko: "코르크스크류 모발", desc: "여러 번 뒤틀려 나선형 구조의 변형을 보이는 부러진 모발" },
+        { en: "Pigtail hairs", ko: "피그테일 모발", desc: "원형 형태를 띠며 자라나는 얇은 연모" },
+        { en: "Coudability hairs", ko: "쿠다빌리티 모발", desc: "근위부 모간이 가늘어져 쉽게 구부러지거나 꺾이는 긴 모발" },
+        { en: "Pohl-Pinkus constrictions", ko: "폴-핀쿠스 수축", desc: "모간의 굵기가 불규칙하게 좁아지는 위축 영역이 존재하는 모발" },
+        { en: "Trichoptilosis", ko: "모발끝갈림", desc: "모발 말단부가 세로로 갈라져 갈래를 형성하는 모발" },
+        { en: "V-sign", ko: "V-징후", desc: "하나의 모낭에서 두 개 이상의 모발이 정확히 동일한 길이에서 부러져 V자를 형성하는 현상" },
+        { en: "Upright regrowing hairs", ko: "직립 재생 모발", desc: "수직으로 곧게 자라나며 원위부 말단이 점진적으로 좁아지는 짧은 재생 모발" },
+        { en: "Thin hairs", ko: "얇은 모발", desc: "길이는 정상적이나 전체적인 직경이 감소한 얇은 모발" },
+        { en: "Zigzag hairs", ko: "지그재그 모발", desc: "좁아진 부위마다 일정한 각도로 꺾임(bends)이 관찰되는 짧은 모발" },
+        { en: "Flame hairs", ko: "화염 모발", desc: "반투명한 끝부분을 지니며 물결 및 원뿔 모양으로 찢겨진 모발" },
+        { en: "Hair powder", ko: "모발 가루", desc: "모낭 입구 주변에 흩뿌려진 색소를 띠는 미세 입자 형태의 모발 잔해" }
     ],
     follicular: [
-        {en:"Yellow dots", ko:"황색점"}, {en:"White dots", ko:"백색점"}, {en:"Absence of follicular openings", ko:"모낭 개구부 소실"},
-        {en:"Follicular keratotic pluggings", ko:"모낭 각화 플러그"}, {en:"Follicular red dots", ko:"모낭 붉은 점"},
-        {en:"Perifollicular scales", ko:"모낭 주위 인설"}, {en:"Peripilar sign", ko:"모주위 징후"}, {en:"Perifollicular erythema", ko:"모낭 주위 홍반"},
-        {en:"Blue-grey dots", ko:"청회색 점"}, {en:"Perifollicular whitish halo", ko:"모낭 주위 희미한 후광"}, {en:"Follicular pustules", ko:"모낭 농포"}
+        { en: "Yellow dots", ko: "황색점", desc: "모낭 입구가 각화 물질 및 피지로 가득 차 관찰되는 황색 점" },
+        { en: "White dots", ko: "백색점", desc: "모낭 개구부가 소실되고 섬유화되어 희게 나타나는 부위" },
+        { en: "Absence of follicular openings", ko: "모낭 개구부 소실", desc: "모낭 입구 자체가 구조적으로 완전히 파괴되고 소실된 현상" },
+        { en: "Follicular keratotic pluggings", ko: "모낭 각화 플러그", desc: "모낭 입구를 완전히 메우고 있는 각화 구조물" },
+        { en: "Follicular red dots", ko: "모낭 붉은 점", desc: "모낭 입구 및 주위에 다환형 구조로 나타나는 붉은 반점" },
+        { en: "Perifollicular scales", ko: "모낭 주위 인설", desc: "모간 주변부를 둘러싸고 있는 인설 및 각질층" },
+        { en: "Peripilar sign", ko: "모주위 징후", desc: "모간 주위를 둘러싼 갈색 색소 침착 영역(후광)의 존재" },
+        { en: "Perifollicular erythema", ko: "모낭 주위 홍반", desc: "모간 주위에 관찰되는 염증성 붉은 기운" },
+        { en: "Blue-grey dots", ko: "청회색 점", desc: "모간 주위에 고리 모양으로 띠를 두르거나 흩어져 있는 청색 및 회색 점" },
+        { en: "Perifollicular whitish halo", ko: "모낭 주위 희미한 후광", desc: "모간을 둘러싼 섬유성 흰색 띠" },
+        { en: "Follicular pustules", ko: "모낭 농포", desc: "모낭과 일치하여 발생하는 고름 물집(농포)" }
     ],
     scalp: [
-        {en:"Honeycomb pigment pattern", ko:"벌집모양 색소 패턴"}, {en:"Crusts", ko:"가피"}, {en:"Scales", ko:"인설"},
-        {en:"Arborizing red lines", ko:"수지상 붉은 선"}, {en:"Telangiectasia", ko:"모세혈관 확장증"}, {en:"White patches", ko:"백색 반점"},
-        {en:"Hidden hairs", ko:"숨겨진 모발"}, {en:"Dirty dots", ko:"더러운 점"}, {en:"Simple red loops", ko:"단순 붉은 루프"},
-        {en:"Twisted red loops", ko:"꼬인 붉은 루프"}, {en:"Pinpoint white dots", ko:"핀포인트 백색점"},
-        {en:"Hair diameter diversity", ko:"모발 직경의 다양성"}, {en:"Tufted hairs", ko:"다발성 모발"},
-        {en:"Predominance of single hairs", ko:"단일 모발의 우세"}, {en:"Focal atrichia", ko:"국소적 무모증"}
+        { en: "Honeycomb pigment pattern", ko: "벌집모양 색소 패턴", desc: "과색소침착을 띠는 선들이 망상 구조로 엮여 형성된 갈색 영역" },
+        { en: "Crusts", ko: "가피(딱지)", desc: "두피 표면에 말라붙은 혈청, 혈액 또는 고름 조직" },
+        { en: "Scales", ko: "인설", desc: "두피 표면에 발생한 과도한 각화성 박리 물질" },
+        { en: "Arborizing red lines", ko: "수지상 붉은 선", desc: "나뭇가지 모양으로 갈라지고 확장된 진피 혈관망" },
+        { en: "Telangiectasia", ko: "모세혈관 확장증", desc: "뚜렷하게 확장된 작고 큰 두피 표층 혈관" },
+        { en: "White patches", ko: "백색 반점", desc: "뚜렷한 구조 없이 균질하게 색소가 결핍된 광범위 섬유화 영역" },
+        { en: "Hidden hairs", ko: "숨겨진 모발", desc: "모간이 비후화된 표피 아래에 묻혀 있어 투명하게 비치는 현상" },
+        { en: "Dirty dots", ko: "더러운 점", desc: "두피 표면에 무작위로 흩어져 있는 다양한 색상의 미세 찌꺼기 및 이물질" },
+        { en: "Simple red loops", ko: "단순 붉은 루프", desc: "비틀림 없이 단순한 고리 형태를 형성하는 모세혈관 분포 양상" },
+        { en: "Twisted red loops", ko: "꼬인 붉은 루프", desc: "한 번 이상 비틀린 형태의 고리를 형성하는 모세혈관 분포 양상" },
+        { en: "Pinpoint white dots", ko: "핀포인트 백색점", desc: "모낭 사이의 공간에서 관찰되는 0.3mm 미만의 매우 작은 흰색 점" },
+        { en: "Hair diameter diversity", ko: "모발 직경의 다양성", desc: "동일한 시야 내에서 정상 모발과 무작위로 얇아진 연모가 혼재하는 현상" },
+        { en: "Tufted hairs", ko: "다발성 모발", desc: "단일 모낭 입구에서 다수의 굵은 모발이 다발을 지어 자라나는 현상" },
+        { en: "Predominance of single hairs", ko: "단일 모발의 우세", desc: "각 모낭 입구에서 단 한 가닥의 모발만이 자라나는 비율이 비정상적으로 증가한 상태" },
+        { en: "Focal atrichia", ko: "국소적 무모증", desc: "뚜렷한 모발이 관찰되지 않는 소규모의 결손 영역" }
     ]
 };
 
@@ -125,13 +153,17 @@ const diseaseStats = {
     "Dissecting Cellulitis (박리성 연조직염)": { "Follicular pustules": {sens: 42.86, ppv: 15.79}, "Crusts": {sens: 0, ppv: 8.14}, "Coiled hairs": {sens: 0, ppv: 3.57}, "Absence of follicular openings": {sens: 64.29, ppv: 2.74}, "Blue-grey dots": {sens: 0, ppv: 2.38} }
 };
 
-// UI 초기화
+// UI 초기화 (툴팁 포함)
 for (let group in symptomsData) {
     const container = document.getElementById(`group-${group}`);
     symptomsData[group].forEach(s => {
         const label = document.createElement('label');
         label.className = 'symptom-item';
-        label.innerHTML = `<input type="checkbox" value="${s.en}"><span>${s.en} (${s.ko})</span>`;
+        label.innerHTML = `
+            <input type="checkbox" value="${s.en}">
+            <span>${s.en} (${s.ko})</span>
+            <span class="tooltip"><strong>${s.en} (${s.ko})</strong><br>${s.desc}</span>
+        `;
         container.appendChild(label);
     });
 }
@@ -155,9 +187,7 @@ function calculate() {
     results.forEach((r, i) => {
         const div = document.createElement('div');
         div.className = `rank-item ${i === 0 ? 'rank-1' : ''}`;
-        
-        // 구글 이미지 검색 쿼리 생성
-        const searchQuery = encodeURIComponent(r.name);
+        const searchQuery = encodeURIComponent(r.name + " trichoscopy");
         const googleLink = `https://www.google.com/search?q=${searchQuery}&tbm=isch`;
         
         div.innerHTML = `
