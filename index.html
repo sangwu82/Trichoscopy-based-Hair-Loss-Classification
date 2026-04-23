@@ -86,6 +86,16 @@
         .btn-toggle-sens { margin-top: 12px; padding: 6px 12px; font-size: 13px; cursor: pointer; border: 1px solid #0984e3; background: white; color: #0984e3; border-radius: 5px; transition: 0.2s; }
         .btn-toggle-sens:hover { background: #f1f7ff; }
 
+        /* 표(Table) 스타일 */
+        .sens-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; background: white; }
+        .sens-table th, .sens-table td { border: 1px solid #dfe6e9; padding: 10px 12px; text-align: left; }
+        .sens-table th { background-color: #f1f7ff; color: #0984e3; font-weight: bold; text-align: center; }
+        .sens-table td:nth-child(2), .sens-table td:nth-child(3), .sens-table td:nth-child(4) { text-align: center; }
+        .sens-table tr:nth-child(even) { background-color: #fafbfc; }
+        /* 체크된 항목 하이라이트 행 스타일 */
+        .highlight-row { background-color: #e3f2fd !important; }
+        .highlight-row td { border-color: #b3d4fc; }
+
         /* 알고리즘 상세 설명 스타일 */
         #algo-toggle-btn { background: none; border: 1px solid #0984e3; color: #0984e3; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 13px; margin-top: 20px; transition: 0.3s; }
         #algo-toggle-btn:hover { background: #0984e3; color: white; }
@@ -202,64 +212,115 @@ const symptomsInfo = {
     ]
 };
 
-// 질환 데이터
+// 업데이트된 질환 데이터
 const diseaseData = {
     "Alopecia Areata (원형탈모)": {
-        "Coudability hairs": {sens: 0, ppv: 100.00}, "Pohl-Pinkus constrictions": {sens: 0, ppv: 100.00},
-        "Pigtail hairs": {sens: 0, ppv: 97.67}, "Exclamation mark hairs": {sens: 46.08, ppv: 96.91},
-        "Black dots": {sens: 50.94, ppv: 82.10}, "Short vellus hairs": {sens: 55.35, ppv: 79.66},
-        "Yellow dots": {sens: 64.39, ppv: 75.43}, "Upright regrowing hairs": {sens: 0, ppv: 73.13},
-        "Broken hairs": {sens: 39.19, ppv: 70.40}, "Simple red loops": {sens: 0, ppv: 50.00}
+        "Yellow dots": {sens: 64.39, ppv: 75.43},
+        "Short vellus hairs": {sens: 55.35, ppv: 79.66},
+        "Black dots": {sens: 50.94, ppv: 82.10},
+        "Exclamation mark hairs": {sens: 46.08, ppv: 96.91},
+        "Broken hairs": {sens: 39.19, ppv: 70.40},
+        "Coudability hairs": {sens: 0, ppv: 100.00},
+        "Pohl-Pinkus constrictions": {sens: 0, ppv: 100.00},
+        "Pigtail hairs": {sens: 0, ppv: 97.67},
+        "Upright regrowing hairs": {sens: 0, ppv: 73.13},
+        "Simple red loops": {sens: 0, ppv: 50.00}
     },
     "Androgenetic Alopecia / FPHL (남성/여성형 탈모)": {
-        "Focal atrichia": {sens: 21.99, ppv: 96.06}, "Hair diameter diversity": {sens: 77.42, ppv: 93.12},
-        "Twisted red loops": {sens: 0, ppv: 88.89}, "Hidden hairs": {sens: 0, ppv: 86.96},
-        "Peripilar sign": {sens: 36.67, ppv: 84.80}, "Predominance of single hairs": {sens: 0, ppv: 75.60},
-        "Thin hairs": {sens: 0, ppv: 65.56}, "Honeycomb pigment pattern": {sens: 26.07, ppv: 62.52},
-        "Pinpoint white dots": {sens: 0, ppv: 60.15}, "Perifollicular whitish halo": {sens: 0, ppv: 55.73}
+        "Hair diameter diversity": {sens: 77.42, ppv: 93.12},
+        "Peripilar sign": {sens: 36.67, ppv: 84.80},
+        "Honeycomb pigment pattern": {sens: 26.07, ppv: 62.52},
+        "Scales": {sens: 22.63, ppv: 0},
+        "Focal atrichia": {sens: 21.99, ppv: 96.06},
+        "Twisted red loops": {sens: 0, ppv: 88.89},
+        "Hidden hairs": {sens: 0, ppv: 86.96},
+        "Predominance of single hairs": {sens: 0, ppv: 75.60},
+        "Thin hairs": {sens: 0, ppv: 65.56},
+        "Pinpoint white dots": {sens: 0, ppv: 60.15},
+        "Perifollicular whitish halo": {sens: 0, ppv: 55.73}
     },
     "Telogen Effluvium (휴지기 탈모)": {
-        "Dirty dots": {sens: 10.19, ppv: 38.18}, "Simple red loops": {sens: 0, ppv: 28.85},
-        "Predominance of single hairs": {sens: 12.62, ppv: 15.48}, "Thin hairs": {sens: 0, ppv: 8.89},
-        "Arborizing red lines": {sens: 14.56, ppv: 4.78}
+        "Arborizing red lines": {sens: 14.56, ppv: 4.78},
+        "Short vellus hairs": {sens: 12.62, ppv: 0},
+        "Predominance of single hairs": {sens: 12.62, ppv: 15.48},
+        "Dirty dots": {sens: 10.19, ppv: 38.18},
+        "Scales": {sens: 9.22, ppv: 0},
+        "Simple red loops": {sens: 0, ppv: 28.85},
+        "Thin hairs": {sens: 0, ppv: 8.89}
     },
     "Trichotillomania (발모벽)": {
-        "Flame hairs": {sens: 0, ppv: 100.00}, "Hair powder": {sens: 0, ppv: 90.91},
-        "V-sign": {sens: 18.58, ppv: 75.56}, "Trichoptilosis": {sens: 24.04, ppv: 65.67},
-        "Coiled hairs": {sens: 0, ppv: 51.79}, "Broken hairs": {sens: 78.14, ppv: 0},
-        "Black dots": {sens: 44.81, ppv: 0}
+        "Broken hairs": {sens: 78.14, ppv: 0},
+        "Black dots": {sens: 44.81, ppv: 0},
+        "Trichoptilosis": {sens: 24.04, ppv: 65.67},
+        "Short vellus hairs": {sens: 21.31, ppv: 0},
+        "V-sign": {sens: 18.58, ppv: 75.56},
+        "Flame hairs": {sens: 0, ppv: 100.00},
+        "Hair powder": {sens: 0, ppv: 90.91},
+        "Coiled hairs": {sens: 0, ppv: 51.79}
     },
     "Lichen Planopilaris (모공성 편평태선)": {
-        "Blue-grey dots": {sens: 0, ppv: 42.86}, "Tufted hairs": {sens: 0, ppv: 44.12},
-        "Perifollicular erythema": {sens: 40.50, ppv: 28.18}, "Absence of follicular openings": {sens: 58.06, ppv: 24.66},
-        "White dots": {sens: 24.01, ppv: 24.10}, "Perifollicular scales": {sens: 63.08, ppv: 0}
+        "Perifollicular scales": {sens: 63.08, ppv: 0},
+        "Absence of follicular openings": {sens: 58.06, ppv: 24.66},
+        "Perifollicular erythema": {sens: 40.50, ppv: 28.18},
+        "Honeycomb pigment pattern": {sens: 26.16, ppv: 0},
+        "White dots": {sens: 24.01, ppv: 24.10},
+        "Blue-grey dots": {sens: 0, ppv: 42.86},
+        "Tufted hairs": {sens: 0, ppv: 44.12}
     },
     "Frontal Fibrosing Alopecia (전두부 섬유성 탈모)": {
-        "Perifollicular erythema": {sens: 40.56, ppv: 25.19}, "Perifollicular scales": {sens: 51.41, ppv: 17.46},
-        "Absence of follicular openings": {sens: 40.96, ppv: 15.53}, "Upright regrowing hairs": {sens: 0, ppv: 15.00},
-        "Follicular keratotic pluggings": {sens: 14.06, ppv: 11.48}
+        "Perifollicular scales": {sens: 51.41, ppv: 17.46},
+        "Absence of follicular openings": {sens: 40.96, ppv: 15.53},
+        "Perifollicular erythema": {sens: 40.56, ppv: 25.19},
+        "Short vellus hairs": {sens: 15.26, ppv: 0},
+        "Follicular keratotic pluggings": {sens: 14.06, ppv: 11.48},
+        "Upright regrowing hairs": {sens: 0, ppv: 15.00}
     },
     "Central Centrifugal Cicatricial Alopecia (중심 원심성 반흔성 탈모)": {
-        "Perifollicular whitish halo": {sens: 94.11, ppv: 12.80}, "Pinpoint white dots": {sens: 76.47, ppv: 9.77},
-        "White patches": {sens: 66.67, ppv: 9.42}, "Perifollicular erythema": {sens: 60.78, ppv: 7.73},
-        "Honeycomb pigment pattern": {sens: 96.08, ppv: 6.23}
+        "Honeycomb pigment pattern": {sens: 96.08, ppv: 6.23},
+        "Perifollicular whitish halo": {sens: 94.11, ppv: 12.80},
+        "Pinpoint white dots": {sens: 76.47, ppv: 9.77},
+        "White patches": {sens: 66.67, ppv: 9.42},
+        "Perifollicular erythema": {sens: 60.78, ppv: 7.73}
     },
     "Discoid Lupus Erythematosus (원판상 홍반성 루푸스)": {
-        "Telangiectasia": {sens: 65.54, ppv: 56.89}, "Follicular keratotic pluggings": {sens: 56.08, ppv: 54.43},
-        "Follicular red dots": {sens: 36.82, ppv: 51.66}, "Perifollicular whitish halo": {sens: 0, ppv: 23.20},
+        "Telangiectasia": {sens: 65.54, ppv: 56.89},
+        "Scales": {sens: 63.51, ppv: 0},
+        "Follicular keratotic pluggings": {sens: 56.08, ppv: 54.43},
+        "Perifollicular scales": {sens: 52.70, ppv: 0},
+        "Follicular red dots": {sens: 36.82, ppv: 51.66},
+        "Perifollicular whitish halo": {sens: 0, ppv: 23.20},
         "White patches": {sens: 0, ppv: 21.33}
     },
     "Folliculitis Decalvans (독발성 모낭염)": {
-        "Follicular pustules": {sens: 48.00, ppv: 31.58}, "Tufted hairs": {sens: 0, ppv: 20.59},
-        "Twisted red loops": {sens: 0, ppv: 7.41}, "Crusts": {sens: 0, ppv: 6.98}, "White dots": {sens: 0, ppv: 3.96}
+        "Follicular pustules": {sens: 48.00, ppv: 31.58},
+        "Absence of follicular openings": {sens: 46.00, ppv: 0},
+        "Scales": {sens: 38.00, ppv: 0},
+        "Hair diameter diversity": {sens: 28.00, ppv: 0},
+        "Arborizing red lines": {sens: 24.00, ppv: 0},
+        "Tufted hairs": {sens: 0, ppv: 20.59},
+        "Twisted red loops": {sens: 0, ppv: 7.41},
+        "Crusts": {sens: 0, ppv: 6.98},
+        "White dots": {sens: 0, ppv: 3.96}
     },
     "Tinea Capitis (두부백선)": {
-        "Corkscrew hairs": {sens: 31.17, ppv: 100.00}, "Comma hairs": {sens: 56.10, ppv: 97.64},
-        "Zigzag hairs": {sens: 0, ppv: 88.06}, "Crusts": {sens: 0, ppv: 27.91}, "V-sign": {sens: 0, ppv: 20.00}
+        "Comma hairs": {sens: 56.10, ppv: 97.64},
+        "Broken hairs": {sens: 47.15, ppv: 0},
+        "Scales": {sens: 42.55, ppv: 0},
+        "Corkscrew hairs": {sens: 31.17, ppv: 100.00},
+        "Black dots": {sens: 22.49, ppv: 0},
+        "Zigzag hairs": {sens: 0, ppv: 88.06},
+        "Crusts": {sens: 0, ppv: 27.91},
+        "V-sign": {sens: 0, ppv: 20.00}
     },
     "Dissecting Cellulitis (박리성 연조직염)": {
-        "Follicular pustules": {sens: 42.86, ppv: 15.79}, "Crusts": {sens: 0, ppv: 8.14},
-        "Coiled hairs": {sens: 0, ppv: 3.57}, "Absence of follicular openings": {sens: 64.29, ppv: 2.74},
+        "Absence of follicular openings": {sens: 64.29, ppv: 2.74},
+        "Black dots": {sens: 50.00, ppv: 0},
+        "Follicular pustules": {sens: 42.86, ppv: 15.79},
+        "Scales": {sens: 35.71, ppv: 0},
+        "Perifollicular erythema": {sens: 28.57, ppv: 0},
+        "Short vellus hairs": {sens: 28.57, ppv: 0},
+        "Crusts": {sens: 0, ppv: 8.14},
+        "Coiled hairs": {sens: 0, ppv: 3.57},
         "Blue-grey dots": {sens: 0, ppv: 2.38}
     }
 };
@@ -283,11 +344,10 @@ function renderSymptoms() {
     }
 }
 
-// 구글 이미지 검색 열기 함수 (질환명 처리 추가)
+// 구글 이미지 검색 열기 함수
 function openGoogleImage(event, query, isDisease = false) {
     event.preventDefault(); // 체크박스 클릭 방지
     event.stopPropagation(); // 이벤트 버블링 방지
-    // 질환명일 경우 이름 뒤에 trichoscopy를, 증상일 경우 앞에 붙여서 검색어 최적화
     const keyword = isDisease ? `${query} trichoscopy` : `trichoscopy ${query}`;
     const searchQuery = encodeURIComponent(keyword);
     window.open(`https://www.google.com/search?tbm=isch&q=${searchQuery}`, "_blank");
@@ -347,24 +407,56 @@ function calculateDiagnosis() {
         const div = document.createElement('div');
         div.className = `rank-item ${index === 0 ? 'rank-1' : ''}`;
         
-        // 민감도 리스트 생성
+        // 민감도 및 PPV 리스트 생성
         let symptomsForDisease = [];
         for (let s in diseaseData[res.name]) {
-            symptomsForDisease.push({ name: s, sens: diseaseData[res.name][s].sens });
+            symptomsForDisease.push({ 
+                name: s, 
+                sens: diseaseData[res.name][s].sens,
+                ppv: diseaseData[res.name][s].ppv
+            });
         }
-        symptomsForDisease.sort((a, b) => b.sens - a.sens);
+        // 합산 값이 높은 순서로 정렬
+        symptomsForDisease.sort((a, b) => (b.sens + b.ppv) - (a.sens + a.ppv));
 
-        let sensitivityHtml = '<ul style="margin-top: 10px; padding-left: 20px; font-size: 0.9em; color: #555; line-height: 1.8;">';
+        // 표(Table) 형식으로 HTML 구성
+        let sensitivityHtml = `
+            <table class="sens-table">
+                <thead>
+                    <tr>
+                        <th>소견 (Symptom)</th>
+                        <th>민감도 (Sensitivity)</th>
+                        <th>양성예측도 (PPV)</th>
+                        <th>체크 여부</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
         symptomsForDisease.forEach(item => {
             let koName = getKoreanName(item.name);
-            let isChecked = selected.includes(item.name) ? ' <span style="color: #0984e3; font-weight: bold;">[✔ 확인됨]</span>' : '';
-            sensitivityHtml += `<li><strong>${item.name} (${koName})</strong>: 민감도 ${item.sens}% ${isChecked}</li>`;
+            let isChecked = selected.includes(item.name);
+            let rowClass = isChecked ? 'highlight-row' : '';
+            let checkMark = isChecked ? '<span style="color: #0984e3; font-weight:bold;">✔</span>' : '-';
+            
+            let sensText = item.sens > 0 ? `${item.sens}%` : '-';
+            let ppvText = item.ppv > 0 ? `${item.ppv}%` : '-';
+            
+            sensitivityHtml += `
+                <tr class="${rowClass}">
+                    <td><strong>${item.name}</strong> <span style="font-size:0.85em; color:#7f8c8d;">(${koName})</span></td>
+                    <td>${sensText}</td>
+                    <td>${ppvText}</td>
+                    <td>${checkMark}</td>
+                </tr>
+            `;
         });
-        sensitivityHtml += '</ul>';
+        sensitivityHtml += `
+                </tbody>
+            </table>
+        `;
         
         const detailsId = `sens-details-${index}`;
-        
-        // 검색 퀄리티를 높이기 위해 영문 질환명만 추출 (예: "Alopecia Areata (원형탈모)" -> "Alopecia Areata")
         const diseaseEnName = res.name.split(' (')[0];
 
         div.innerHTML = `
@@ -376,10 +468,10 @@ function calculateDiagnosis() {
                 Likelihood Score: <strong>${res.score}</strong> | Matched Symptoms: ${res.matches}
             </div>
             
-            <button class="btn-toggle-sens" onclick="toggleSens('${detailsId}', this)">증상 민감도 보기 ▼</button>
+            <button class="btn-toggle-sens" onclick="toggleSens('${detailsId}', this)">해당 질환 소견 수치 보기 ▼</button>
             
             <div id="${detailsId}" style="display: none; margin-top: 15px; background: #fff; padding: 15px; border-radius: 8px; border: 1px dashed #b2bec3;">
-                <div style="font-size: 0.95em; color: #2d3436; font-weight: bold; margin-bottom: 5px;">해당 질환의 주요 소견 민감도</div>
+                <div style="font-size: 0.95em; color: #2d3436; font-weight: bold; margin-bottom: 5px;">질환 주요 소견 데이터 통계</div>
                 ${sensitivityHtml}
             </div>
         `;
@@ -394,11 +486,11 @@ function toggleSens(detailsId, btnElement) {
     const detailsDiv = document.getElementById(detailsId);
     if (detailsDiv.style.display === 'none') {
         detailsDiv.style.display = 'block';
-        btnElement.innerText = '증상 민감도 닫기 ▲';
+        btnElement.innerText = '해당 질환 소견 수치 닫기 ▲';
         btnElement.style.background = '#f1f7ff';
     } else {
         detailsDiv.style.display = 'none';
-        btnElement.innerText = '증상 민감도 보기 ▼';
+        btnElement.innerText = '해당 질환 소견 수치 보기 ▼';
         btnElement.style.background = 'white';
     }
 }
